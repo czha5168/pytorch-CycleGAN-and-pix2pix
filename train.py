@@ -1,4 +1,4 @@
-# test
+#test
 import time
 from options.train_options import TrainOptions
 from data import CreateDataLoader
@@ -6,10 +6,13 @@ from models import create_model
 from util.visualizer import Visualizer
 if __name__ == '__main__':
     opt = TrainOptions().parse()
+    print('chaoyi:"opt parsing finished"')
+    print(opt.dataset_mode)
     data_loader = CreateDataLoader(opt)
     dataset = data_loader.load_data()
     dataset_size = len(data_loader)
     print('#training images = %d' % dataset_size)
+    print('chaoyi:"dataset construction completed"')
 
     model = create_model(opt)
     model.setup(opt)

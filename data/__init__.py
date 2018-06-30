@@ -8,6 +8,7 @@ def find_dataset_using_name(dataset_name):
     # the file "datasets/datasetname_dataset.py"
     # will be imported. 
     dataset_filename = "data." + dataset_name + "_dataset"
+    print('dataset to be imported:', dataset_filename)
     datasetlib = importlib.import_module(dataset_filename)
 
     # In the file, the class called DatasetNameDataset() will
