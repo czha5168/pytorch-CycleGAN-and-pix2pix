@@ -17,6 +17,7 @@ class BaseOptions():
         parser.add_argument('--fineSize', type=int, default=256, help='then crop to this size')
         parser.add_argument('--input_nc', type=int, default=3, help='# of input image channels')
         parser.add_argument('--output_nc', type=int, default=3, help='# of output image channels')
+        parser.add_argument('--n_outbranches', type=int, default=-1, help='# of output branches of UNet')
         parser.add_argument('--ngf', type=int, default=64, help='# of gen filters in first conv layer')
         parser.add_argument('--ndf', type=int, default=64, help='# of discrim filters in first conv layer')
         parser.add_argument('--which_model_netD', type=str, default='basic', help='selects model to use for netD')

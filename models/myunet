@@ -1,0 +1,74 @@
+DataParallel(
+  (module): UnetGeneratorMultipleOutputs(
+    (dropout): Dropout(p=0.5)
+    (down1): UnetDownPath(
+      (downconv): Conv2d(3, 64, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=False)
+    )
+    (upup1): UnetUpUpPath(
+      (uprelu): ReLU(inplace)
+      (upconv): ConvTranspose2d(128, 3, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (upnorm): Tanh()
+    )
+    (down2): UnetDownPath(
+      (downrelu): LeakyReLU(negative_slope=0.2, inplace)
+      (downconv): Conv2d(64, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=False)
+      (downnorm): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (upup2): UnetUpUpPath(
+      (uprelu): ReLU(inplace)
+      (upconv): ConvTranspose2d(256, 64, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (upnorm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (down3): UnetDownPath(
+      (downrelu): LeakyReLU(negative_slope=0.2, inplace)
+      (downconv): Conv2d(128, 256, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=False)
+      (downnorm): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (upup3): UnetUpUpPath(
+      (uprelu): ReLU(inplace)
+      (upconv): ConvTranspose2d(512, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (upnorm): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (down4): UnetDownPath(
+      (downrelu): LeakyReLU(negative_slope=0.2, inplace)
+      (downconv): Conv2d(256, 512, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=False)
+      (downnorm): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (upup4): UnetUpUpPath(
+      (uprelu): ReLU(inplace)
+      (upconv): ConvTranspose2d(1024, 256, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (upnorm): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (down5): UnetDownPath(
+      (downrelu): LeakyReLU(negative_slope=0.2, inplace)
+      (downconv): Conv2d(512, 512, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=False)
+      (downnorm): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (upup5): UnetUpUpPath(
+      (uprelu): ReLU(inplace)
+      (upconv): ConvTranspose2d(1024, 512, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (upnorm): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (down6): UnetDownPath(
+      (downrelu): LeakyReLU(negative_slope=0.2, inplace)
+      (downconv): Conv2d(512, 512, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=False)
+      (downnorm): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (upup6): UnetUpUpPath(
+      (uprelu): ReLU(inplace)
+      (upconv): ConvTranspose2d(1024, 512, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (upnorm): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (down7): UnetDownPath(
+      (downrelu): LeakyReLU(negative_slope=0.2, inplace)
+      (downconv): Conv2d(512, 512, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=False)
+      (downnorm): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (upup7): UnetUpUpPath(
+      (uprelu): ReLU(inplace)
+      (upconv): ConvTranspose2d(1024, 512, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (upnorm): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+
+  )
+)

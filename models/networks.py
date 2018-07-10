@@ -4,6 +4,7 @@ from torch.nn import init
 import functools
 from torch.optim import lr_scheduler
 
+
 ###############################################################################
 # Helper Functions
 ###############################################################################
@@ -69,7 +70,7 @@ def init_net(net, init_type='normal', gpu_ids=[]):
     return net
 
 
-def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropout=False, init_type='normal', gpu_ids=[]):
+def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropout=False, init_type='normal', gpu_ids=[], n_outbranches=None):
     netG = None
     norm_layer = get_norm_layer(norm_type=norm)
 
@@ -81,6 +82,11 @@ def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropo
         netG = UnetGenerator(input_nc, output_nc, 7, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
     elif which_model_netG == 'unet_256':
         netG = UnetGenerator(input_nc, output_nc, 8, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
+    elif which_model_netG == 'unet_256_multiple_outputs':
+        print('###############################################################')
+        print(which_model_netG)
+        print(input_nc, output_nc)
+        netG = UnetGeneratorMultipleOutputs(input_nc, output_nc, 8, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_outbranches=n_outbranches)
     else:
         raise NotImplementedError('Generator model name [%s] is not recognized' % which_model_netG)
     return init_net(netG, init_type, gpu_ids)
@@ -227,8 +233,309 @@ class ResnetBlock(nn.Module):
     def forward(self, x):
         out = x + self.conv_block(x)
         return out
+'''
+########################################################################################################################
+# Defines the Unet generator.
+# |num_downs|: number of downsamplings in UNet. For example,
+# if |num_downs| == 7, image of size 128x128 will become of size 1x1
+# at the bottleneck
+class UnetGeneratorMultipleOutputs(nn.Module):
+    def __init__(self, input_nc, output_nc, num_downs, ngf=64,
+                 norm_layer=nn.BatchNorm2d, use_dropout=False, n_outbranches=None):
+        super(UnetGeneratorMultipleOutputs, self).__init__()
+
+        # construct unet structure
+        self.n_outbranches = n_outbranches
+  
+            #LEVEL-1
+
+        downconv, downrelu, downnorm, uprelu, upnorm, use_bias = build_down_branch_helper(outer_nc=ngf * 8,
+                                                                                          inner_nc=ngf * 8,
+                                                                                          input_nc=None,
+                                                                                          norm_layer=norm_layer)
+        unet_block= UnetSkipConnectionBlockMultipleOutputs(outer_nc=ngf * 8, inner_nc=ngf * 8,
+                                                            downconv=downconv, downrelu=downrelu,
+                                                            downnorm=downnorm, uprelu=uprelu,
+                                                            upnorm=upnorm, use_bias=use_bias,
+                                                            submodule=None,
+                                                            innermost=True)
+    
+            #LEVEL-2
+     
+        downconv, downrelu, downnorm, uprelu, upnorm, use_bias = build_down_branch_helper(outer_nc=ngf * 8,
+                                                                                          inner_nc=ngf * 8,
+                                                                                          input_nc=None,
+                                                                                          norm_layer=norm_layer)
+
+        unet_block = UnetSkipConnectionBlockMultipleOutputs(outer_nc=ngf * 8, inner_nc=ngf * 8,
+                                                            downconv=downconv, downrelu=downrelu,
+                                                            downnorm=downnorm, uprelu=uprelu,
+                                                            upnorm=upnorm, use_bias=use_bias,
+                                                            submodule=unet_block,
+                                                            use_dropout=use_dropout)
+        
+            #LEVEL-3
+      
+        downconv, downrelu, downnorm, uprelu, upnorm, use_bias = build_down_branch_helper(outer_nc=ngf * 8,
+                                                                                          inner_nc=ngf * 8,
+                                                                                          input_nc=None,
+                                                                                          norm_layer=norm_layer)
+
+        unet_block = UnetSkipConnectionBlockMultipleOutputs(outer_nc=ngf * 8, inner_nc=ngf * 8,
+                                                                  downconv=downconv, downrelu=downrelu,
+                                                                  downnorm=downnorm, uprelu=uprelu,
+                                                                  upnorm=upnorm, use_bias=use_bias,
+                                                                  submodule=unet_block,
+                                                                  use_dropout=use_dropout)
+
+      
+            #LEVEL-4
+      
+        downconv, downrelu, downnorm, uprelu, upnorm, use_bias = build_down_branch_helper(outer_nc=ngf * 8,
+                                                                                          inner_nc=ngf * 8,
+                                                                                          input_nc=None,
+                                                                                          norm_layer=norm_layer)
+
+        unet_block = UnetSkipConnectionBlockMultipleOutputs(outer_nc=ngf * 8, inner_nc=ngf * 8,
+                                                                  downconv=downconv, downrelu=downrelu,
+                                                                  downnorm=downnorm, uprelu=uprelu,
+                                                                  upnorm=upnorm, use_bias=use_bias,
+                                                                  submodule=unet_block,
+                                                                  use_dropout=use_dropout)
+       
+           # LEVEL-5
+        
+        downconv, downrelu, downnorm, uprelu, upnorm, use_bias = build_down_branch_helper(outer_nc=ngf * 4,
+                                                                                          inner_nc=ngf * 8,
+                                                                                          input_nc=None,
+                                                                                          norm_layer=norm_layer)
+        unet_block = UnetSkipConnectionBlockMultipleOutputs(outer_nc=ngf * 4, inner_nc=ngf * 8,
+                                                            downconv=downconv, downrelu=downrelu,
+                                                            downnorm=downnorm, uprelu=uprelu,
+                                                            upnorm=upnorm, use_bias=use_bias,
+                                                            submodule=unet_block)
+        
+            #LEVEL-6
+       
+        downconv, downrelu, downnorm, uprelu, upnorm, use_bias = build_down_branch_helper(outer_nc=ngf * 2,
+                                                                                          inner_nc=ngf * 4,
+                                                                                          input_nc=None,
+                                                                                          norm_layer=norm_layer)
+        unet_block = UnetSkipConnectionBlockMultipleOutputs(outer_nc=ngf * 2, inner_nc=ngf * 4,
+                                                            downconv=downconv, downrelu=downrelu,
+                                                            downnorm=downnorm, uprelu=uprelu,
+                                                            upnorm=upnorm, use_bias=use_bias,
+                                                            submodule=unet_block)
+        
+            #LEVEL-7
+        
+
+        downconv, downrelu, downnorm, uprelu, upnorm, use_bias = build_down_branch_helper(outer_nc=ngf * 1,
+                                                                                          inner_nc=ngf * 2,
+                                                                                          input_nc=None,
+                                                                                          norm_layer=norm_layer)
+        unet_block = UnetSkipConnectionBlockMultipleOutputs(outer_nc=ngf * 1, inner_nc=ngf * 2,
+                                                            downconv=downconv, downrelu=downrelu,
+                                                            downnorm=downnorm, uprelu=uprelu,
+                                                            upnorm=upnorm, use_bias=use_bias,
+                                                            submodule=unet_block)
+        
+            #LEVEL-8
+        
+        downconv, downrelu, downnorm, uprelu, upnorm, use_bias = build_down_branch_helper(outer_nc=output_nc,
+                                                                                          inner_nc=ngf * 1,
+                                                                                          input_nc=input_nc,
+                                                                                          norm_layer=norm_layer)
+        unet_block = UnetSkipConnectionBlockMultipleOutputs(outer_nc=output_nc, inner_nc=ngf,
+                                                            downconv=downconv, downrelu=downrelu,
+                                                            downnorm=downnorm, uprelu=uprelu,
+                                                            upnorm=upnorm, use_bias=use_bias,
+                                                            submodule=unet_block, outermost=True)
+        self.model = unet_block
+    def forward(self, input):
+        return self.model(input)
+def build_down_branch_helper(outer_nc, inner_nc, input_nc=None, norm_layer=nn.BatchNorm2d):
+    if type(norm_layer) == functools.partial:
+        use_bias = norm_layer.func == nn.InstanceNorm2d
+    else:
+        use_bias = norm_layer == nn.InstanceNorm2d
+    if input_nc is None:
+        input_nc = outer_nc
+    downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=4,
+                         stride=2, padding=1, bias=use_bias)
+    downrelu = nn.LeakyReLU(0.2, True)
+    downnorm = norm_layer(inner_nc)
+    uprelu = nn.ReLU(True)
+    upnorm = norm_layer(outer_nc)
+    return downconv, downrelu, downnorm, uprelu, upnorm, use_bias
+# Defines the submodule with skip connection.
+# X -------------------identity---------------------- X
+#   |-- downsampling -- |submodule| -- upsampling --|
+class UnetSkipConnectionBlockMultipleOutputs(nn.Module):
+    def __init__(self, outer_nc, inner_nc, downconv, downrelu, downnorm, uprelu, upnorm, use_bias,
+                 submodule=None, outermost=False, innermost=False, use_dropout=False):
+        super(UnetSkipConnectionBlockMultipleOutputs, self).__init__()
+
+        self.outermost = outermost
+        if self.outermost:
+            upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
+                                        kernel_size=4, stride=2,
+                                        padding=1)
+            down = [downconv]
+            up = [uprelu, upconv, nn.Tanh()]
+            model = down + [submodule] + up
+        elif innermost:
+            down = [downrelu, downconv]
+            upconv = nn.ConvTranspose2d(inner_nc, outer_nc,
+                                        kernel_size=4, stride=2,
+                                        padding=1, bias=use_bias)
+            up = [uprelu, upconv, upnorm]
+            model = down + up
+        else:
+            upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
+                                        kernel_size=4, stride=2,
+                                        padding=1, bias=use_bias)
+            down = [downrelu, downconv, downnorm]
+            up = [uprelu, upconv, upnorm]
+            if use_dropout:
+                model = down + [submodule] + up + [nn.Dropout(0.5)]
+            else:
+                model = down + [submodule] + up
+        self.model = nn.Sequential(*model)
+
+    def forward(self, x):
+        if self.outermost:
+            return self.model(x)
+        else:
+            return torch.cat([x, self.model(x)], 1)
+
+########################################################################################################################
+'''
 
 
+# Defines the Unet generator.
+# |num_downs|: number of downsamplings in UNet. For example,
+# if |num_downs| == 7, image of size 128x128 will become of size 1x1
+# at the bottleneck
+class UnetGeneratorMultipleOutputs(nn.Module):
+    def __init__(self, input_nc, output_nc, num_downs, ngf=64,
+                 norm_layer=nn.BatchNorm2d, use_dropout=False, n_outbranches=None):
+        super(UnetGeneratorMultipleOutputs, self).__init__()
+        self.n_outbrances=n_outbranches
+        if type(norm_layer) == functools.partial:
+            use_bias = norm_layer.func == nn.InstanceNorm2d
+        else:
+            use_bias = norm_layer == nn.InstanceNorm2d
+        # construct unet structure
+
+        self.dropout = nn.Dropout(0.5)
+        self.down1 = UnetDownPath(outer_nc=output_nc, inner_nc=ngf, norm_layer=norm_layer, block_location='outermost', use_bias=use_bias, input_nc=input_nc)
+        self.upup1 = UnetUpUpPath(outer_nc=output_nc, inner_nc=ngf, norm_layer=norm_layer, block_location='outermost', use_bias=use_bias)
+
+        self.down2 = UnetDownPath(outer_nc=ngf * 1, inner_nc=ngf * 2, norm_layer=norm_layer, block_location='middle', use_bias=use_bias, input_nc=None)
+        self.upup2 = UnetUpUpPath(outer_nc=ngf * 1, inner_nc=ngf * 2, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+
+        self.down3 = UnetDownPath(outer_nc=ngf * 2, inner_nc=ngf * 4, norm_layer=norm_layer, block_location='middle', use_bias=use_bias, input_nc=None)
+        self.upup3 = UnetUpUpPath(outer_nc=ngf * 2, inner_nc=ngf * 4, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+
+        self.down4 = UnetDownPath(outer_nc=ngf * 4, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias, input_nc=None)
+        self.upup4 = UnetUpUpPath(outer_nc=ngf * 4, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+
+        self.down5 = UnetDownPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias, input_nc=None)
+        self.upup5 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+
+        self.down6 = UnetDownPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias, input_nc=None)
+        self.upup6 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+
+        self.down7 = UnetDownPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias, input_nc=None)
+        self.upup7 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+
+        self.down8 = UnetDownPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='innermost', use_bias=use_bias, input_nc=None)
+        self.upup8 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='innermost', use_bias=use_bias)
+    def forward(self, input):
+        # Down
+        x1down = self.down1(input)
+        x2down = self.down2(x1down)
+        x3down = self.down3(x2down)
+        x4down = self.down4(x3down)
+        x5down = self.down5(x4down)
+        x6down = self.down6(x5down)
+        x7down = self.down7(x6down)
+        x8down = self.down8(x7down)
+        # UpUP
+        x8upup = self.upup8(x8down)
+        x8upup_cat = torch.cat([x7down, x8upup], 1)
+
+        x7upup = self.dropout(self.upup7(x8upup_cat))
+        x7upup_cat = torch.cat([x6down, x7upup], 1)
+
+        x6upup = self.dropout(self.upup6(x7upup_cat))
+        x6upup_cat = torch.cat([x5down, x6upup], 1)
+
+        x5upup = self.dropout(self.upup5(x6upup_cat))
+        x5upup_cat = torch.cat([x4down, x5upup], 1)
+
+        x4upup = self.upup4(x5upup_cat)
+        x4upup_cat = torch.cat([x3down, x4upup], 1)
+
+        x3upup = self.upup3(x4upup_cat)
+        x3upup_cat = torch.cat([x2down, x3upup], 1)
+
+        x2upup = self.upup2(x3upup_cat)
+        x2upup_cat = torch.cat([x1down, x2upup], 1)
+
+        x1upup = self.upup1(x2upup_cat)
+
+        return x1upup
+
+class UnetDownPath(nn.Module):
+    def __init__(self, outer_nc, inner_nc, norm_layer, block_location, use_bias, input_nc):
+        super(UnetDownPath, self).__init__()
+        if input_nc is None:
+            input_nc = outer_nc
+        self.block_location = block_location
+        if self.block_location == 'outermost':
+            self.downrelu = None
+        else:
+            self.downrelu = nn.LeakyReLU(0.2, True)
+        self.downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=4,
+                                  stride=2, padding=1, bias=use_bias)
+        if self.block_location == 'middle':
+            self.downnorm = norm_layer(inner_nc)
+        else:
+            self.downnorm = None
+    def forward(self, x):
+        if self.downrelu is not None:
+            x = self.downrelu(x)
+        x = self.downconv(x)
+        if self.downnorm is not None:
+            x = self.downnorm(x)
+        return  x
+class UnetUpUpPath(nn.Module):
+    def __init__(self, outer_nc, inner_nc, norm_layer, block_location, use_bias):
+        super(UnetUpUpPath, self).__init__()
+        self.uprelu = nn.ReLU(True)
+        if block_location == 'innermost':
+            self.upconv = nn.ConvTranspose2d(inner_nc, outer_nc,
+                                        kernel_size=4, stride=2,
+                                        padding=1, bias=use_bias)
+        elif block_location == 'outermost':
+            self.upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
+                                        kernel_size=4, stride=2,
+                                        padding=1)
+        else:
+            self.upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
+                                        kernel_size=4, stride=2,
+                                        padding=1, bias=use_bias)
+        if block_location == 'outermost':
+            self.upnorm = nn.Tanh()
+        else:
+            self.upnorm = norm_layer(outer_nc)
+    def forward(self, x):
+        x = self.uprelu(x)
+        x = self.upconv(x)
+        x = self.upnorm(x)
+        return x
 # Defines the Unet generator.
 # |num_downs|: number of downsamplings in UNet. For example,
 # if |num_downs| == 7, image of size 128x128 will become of size 1x1
@@ -246,13 +553,9 @@ class UnetGenerator(nn.Module):
         unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 4, input_nc=None, submodule=unet_block, norm_layer=norm_layer)
         unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, input_nc=None, submodule=unet_block, norm_layer=norm_layer)
         unet_block = UnetSkipConnectionBlock(output_nc, ngf, input_nc=input_nc, submodule=unet_block, outermost=True, norm_layer=norm_layer)
-
         self.model = unet_block
-
     def forward(self, input):
         return self.model(input)
-
-
 # Defines the submodule with skip connection.
 # X -------------------identity---------------------- X
 #   |-- downsampling -- |submodule| -- upsampling --|

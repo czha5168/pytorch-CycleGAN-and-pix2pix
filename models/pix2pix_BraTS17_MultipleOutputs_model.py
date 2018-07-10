@@ -1,13 +1,12 @@
 import torch
-import numpy as np
 from util.image_pool import ImagePool
 from .base_model import BaseModel
 from . import networks
 
 
-class Pix2PixBraTS17Model(BaseModel):
+class Pix2PixBraTS17MultipleOutputsModel(BaseModel):
     def name(self):
-        return 'Pix2PixBraTS17Model'
+        return 'Pix2PixBraTS17MultipleOutputsModel'
 
     @staticmethod
     def modify_commandline_options(parser, is_train=True):
@@ -30,7 +29,7 @@ class Pix2PixBraTS17Model(BaseModel):
         # specify the training losses you want to print out. The program will call base_model.get_current_losses
         self.loss_names = ['G_GAN', 'G_L1', 'D_real', 'D_fake']
         # specify the images you want to save/display. The program will call base_model.get_current_visuals
-        self.visual_names = ['real_A', 'fake_B', 'real_B', 'diff_B', 'mask_C']
+        self.visual_names = ['real_A', 'fake_B', 'real_B']
         # specify the models you want to save to the disk. The program will call base_model.save_networks and base_model.load_networks
         if self.isTrain:
             self.model_names = ['G', 'D']
@@ -38,7 +37,8 @@ class Pix2PixBraTS17Model(BaseModel):
             self.model_names = ['G']
         # load/define networks
         self.netG = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf,
-                                      opt.which_model_netG, opt.norm, not opt.no_dropout, opt.init_type, self.gpu_ids)
+                                      opt.which_model_netG, opt.norm, not opt.no_dropout, opt.init_type, self.gpu_ids, opt.n_outbranches)
+        print(self.netG)
 
         if self.isTrain:
             use_sigmoid = opt.no_lsgan
@@ -65,33 +65,10 @@ class Pix2PixBraTS17Model(BaseModel):
         AtoB = self.opt.which_direction == 'AtoB'
         self.real_A = input['A' if AtoB else 'B'].to(self.device)
         self.real_B = input['B' if AtoB else 'A'].to(self.device)
-        self.mask_C = input['C']
         self.image_paths = input['A_paths' if AtoB else 'B_paths']
-
-    def compute_diff_B(self):
-        '''
-        Created by Chaoyi
-        Compute the difference between fakeB and realB and visualize them in red and green
-        :return: self.diff_B
-        '''
-        self.diff_B = np.zeros(self.fake_B.shape)
-        temp_masks = (self.real_B - self.fake_B).data.cpu().numpy()
-        self.diff_B = np.zeros(temp_masks.shape)
-        for idx in range(self.diff_B.shape[0]):
-            mid_layer_mask = temp_masks[idx, 1, :, :]
-            epsilon = np.abs(mid_layer_mask[0, 0])
-            red_mask = np.zeros(temp_masks.shape[2:])
-            red_mask[mid_layer_mask < -epsilon] = 1
-            green_mask = np.zeros(temp_masks.shape[2:])
-            green_mask[mid_layer_mask > epsilon] = 1
-            self.diff_B[idx, 0, :, :] = red_mask
-            self.diff_B[idx, 1, :, :] = green_mask
-        self.diff_B = torch.tensor(self.diff_B)
 
     def forward(self):
         self.fake_B = self.netG(self.real_A)
-        self.compute_diff_B()
-
 
     def backward_D(self):
         # Fake
