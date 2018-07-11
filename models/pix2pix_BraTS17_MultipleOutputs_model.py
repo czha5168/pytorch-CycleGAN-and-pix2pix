@@ -32,7 +32,7 @@ class Pix2PixBraTS17MultipleOutputsModel(BaseModel):
         #self.loss_names = ['G_GAN', 'G_L1', 'D_real', 'D_fake']
         self.loss_names = ['G_GAN', 'G_L1', 'D_to1', 'D_to2', 'D_to3']
         # specify the images you want to save/display. The program will call base_model.get_current_visuals
-        self.visual_names = ['real_from', 'fake_to1', 'real_to1', 'fake_to2', 'real_to2', 'fake_to3', 'real_to3']
+        self.visual_names = ['real_from', 'SegMask', 'fake_to1', 'real_to1', 'fake_to2', 'real_to2', 'fake_to3', 'real_to3']
         # specify the models you want to save to the disk. The program will call base_model.save_networks and base_model.load_networks
         if self.isTrain:
             self.model_names = ['G', 'D_to1', 'D_to2', 'D_to3']
@@ -97,6 +97,7 @@ class Pix2PixBraTS17MultipleOutputsModel(BaseModel):
         else:
             print('wrong setting for "which_direction"')
             exit(1)
+        self.SegMask = input['SEG']
         self.image_paths = input['all_in_one_path']
 
     def forward(self):

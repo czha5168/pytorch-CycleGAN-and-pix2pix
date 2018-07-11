@@ -31,8 +31,16 @@ set -ex
 
 
 # Version4: OneModalToThreeModal
-# unet_256_multiple_outputs
-# --n_outbranch 3
-# aligned_BraTS17_all_in_one
-# data_dir = '/media/machine/Storage/Dataset/BraTS17_MICCAI/sliceExtracted_2D/info_kept/train_all_in_one_flatten_50_cases'
-python ./../train.py --dataroot /media/machine/Storage/Dataset/BraTS17_MICCAI/sliceExtracted_2D/info_kept/train_all_in_one_flatten_50_cases --display_ncols 5 --display_winsize 256 --name LockEncoderPath/T1 --model pix2pix_BraTS17_MultipleOutputs --which_model_netG unet_256_multiple_outputs --n_outbranches 3 --which_direction FROM_T1 --lambda_L1 100 --dataset_mode aligned_BraTS17_all_in_one --batchSize 16 --niter 50 --no_lsgan --norm batch --pool_size 0 #[UpdatedCommand-MaskReferenceGiven&Diff_B_computed] #[FlairtoT1]
+# implment: unet_256_multiple_outputs 
+#		- Reimplement it as Encoder-Decoder format
+# 		- Improve it to Multiple Outputs Version
+#	    aligned_BraTS17_all_in_one
+#		- Dataloader to load T1/T2/T1ce/flair/SegMask at once
+#	    pix2pix_BraTS17_MultipleOutputs_model
+#		- Employ unet_256_multiple_outputs as its generator
+#		- Create three seperate discriminator to deal with each branch output seperately
+#		- Loss = (G_L1 + G_GAN + D_real + D_fake) * (from_to1, from_to2, from_to3)
+#	    new dataset format = train_all_in_one_flatten_all_cases
+#python ./../train.py --dataroot /media/machine/Storage/Dataset/BraTS17_MICCAI/sliceExtracted_2D/info_kept/train_all_in_one_flatten_50_cases --display_ncols 2 --display_winsize 256 --name OneEncoderThreeDecoder/T1 --model pix2pix_BraTS17_MultipleOutputs --which_model_netG unet_256_multiple_outputs --which_direction FROM_T1 --lambda_L1 100 --dataset_mode aligned_BraTS17_all_in_one --batchSize 16 --niter 500 --no_lsgan --norm batch --pool_size 0 #[UpdatedCommand-MaskReferenceGiven&Diff_B_computed] #[FlairtoT1]
+
+python ./../train.py --dataroot /media/machine/Storage/Dataset/BraTS17_MICCAI/sliceExtracted_2D/info_kept/train_all_in_one_flatten_all_cases --display_ncols 2 --display_winsize 256 --name OneEncoderThreeDecoder/T1 --model pix2pix_BraTS17_MultipleOutputs --which_model_netG unet_256_multiple_outputs --which_direction FROM_T1 --lambda_L1 100 --dataset_mode aligned_BraTS17_all_in_one --batchSize 16 --niter 500 --no_lsgan --norm batch --pool_size 0 #[UpdatedCommand-MaskReferenceGiven&Diff_B_computed] #[FlairtoT1]
