@@ -249,30 +249,47 @@ class UnetGeneratorMultipleOutputs(nn.Module):
 
         self.dropout = nn.Dropout(0.5)
         self.down1 = UnetDownPath(outer_nc=output_nc, inner_nc=ngf, norm_layer=norm_layer, block_location='outermost', use_bias=use_bias, input_nc=input_nc)
-        self.upup1 = UnetUpUpPath(outer_nc=output_nc, inner_nc=ngf, norm_layer=norm_layer, block_location='outermost', use_bias=use_bias)
+        self.upup1_b1 = UnetUpUpPath(outer_nc=output_nc, inner_nc=ngf, norm_layer=norm_layer, block_location='outermost', use_bias=use_bias)
+        self.upup1_b2 = UnetUpUpPath(outer_nc=output_nc, inner_nc=ngf, norm_layer=norm_layer, block_location='outermost', use_bias=use_bias)
+        self.upup1_b3 = UnetUpUpPath(outer_nc=output_nc, inner_nc=ngf, norm_layer=norm_layer, block_location='outermost', use_bias=use_bias)
 
         self.down2 = UnetDownPath(outer_nc=ngf * 1, inner_nc=ngf * 2, norm_layer=norm_layer, block_location='middle', use_bias=use_bias, input_nc=None)
-        self.upup2 = UnetUpUpPath(outer_nc=ngf * 1, inner_nc=ngf * 2, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup2_b1 = UnetUpUpPath(outer_nc=ngf * 1, inner_nc=ngf * 2, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup2_b2 = UnetUpUpPath(outer_nc=ngf * 1, inner_nc=ngf * 2, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup2_b3 = UnetUpUpPath(outer_nc=ngf * 1, inner_nc=ngf * 2, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
 
         self.down3 = UnetDownPath(outer_nc=ngf * 2, inner_nc=ngf * 4, norm_layer=norm_layer, block_location='middle', use_bias=use_bias, input_nc=None)
-        self.upup3 = UnetUpUpPath(outer_nc=ngf * 2, inner_nc=ngf * 4, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup3_b1 = UnetUpUpPath(outer_nc=ngf * 2, inner_nc=ngf * 4, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup3_b2 = UnetUpUpPath(outer_nc=ngf * 2, inner_nc=ngf * 4, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup3_b3 = UnetUpUpPath(outer_nc=ngf * 2, inner_nc=ngf * 4, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
 
         self.down4 = UnetDownPath(outer_nc=ngf * 4, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias, input_nc=None)
-        self.upup4 = UnetUpUpPath(outer_nc=ngf * 4, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup4_b1 = UnetUpUpPath(outer_nc=ngf * 4, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup4_b2 = UnetUpUpPath(outer_nc=ngf * 4, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup4_b3 = UnetUpUpPath(outer_nc=ngf * 4, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
 
         self.down5 = UnetDownPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias, input_nc=None)
-        self.upup5 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup5_b1 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup5_b2 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup5_b3 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
 
         self.down6 = UnetDownPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias, input_nc=None)
-        self.upup6 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup6_b1 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup6_b2 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup6_b3 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
 
         self.down7 = UnetDownPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias, input_nc=None)
-        self.upup7 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup7_b1 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup7_b2 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
+        self.upup7_b3 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='middle', use_bias=use_bias)
 
         self.down8 = UnetDownPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='innermost', use_bias=use_bias, input_nc=None)
-        self.upup8 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='innermost', use_bias=use_bias)
+        self.upup8_b1 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='innermost', use_bias=use_bias)
+        self.upup8_b2 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='innermost', use_bias=use_bias)
+        self.upup8_b3 = UnetUpUpPath(outer_nc=ngf * 8, inner_nc=ngf * 8, norm_layer=norm_layer, block_location='innermost', use_bias=use_bias)
+
     def forward(self, input):
-        # Down
+        # Down - one branch
         x1down = self.down1(input)
         x2down = self.down2(x1down)
         x3down = self.down3(x2down)
@@ -281,31 +298,63 @@ class UnetGeneratorMultipleOutputs(nn.Module):
         x6down = self.down6(x5down)
         x7down = self.down7(x6down)
         x8down = self.down8(x7down)
-        # UpUP
-        x8upup = self.upup8(x8down)
-        x8upup_cat = torch.cat([x7down, x8upup], 1)
+        # UpUP - three branches
+        x8upup_b1 = self.upup8_b1(x8down)
+        x8upup_b2 = self.upup8_b2(x8down)
+        x8upup_b3 = self.upup8_b3(x8down)
+        x8upup_cat_b1 = torch.cat([x7down, x8upup_b1], 1)
+        x8upup_cat_b2 = torch.cat([x7down, x8upup_b2], 1)
+        x8upup_cat_b3 = torch.cat([x7down, x8upup_b3], 1)
 
-        x7upup = self.dropout(self.upup7(x8upup_cat))
-        x7upup_cat = torch.cat([x6down, x7upup], 1)
+        x7upup_b1 = self.dropout(self.upup7_b1(x8upup_cat_b1))
+        x7upup_b2 = self.dropout(self.upup7_b2(x8upup_cat_b2))
+        x7upup_b3 = self.dropout(self.upup7_b3(x8upup_cat_b3))
+        x7upup_cat_b1 = torch.cat([x6down, x7upup_b1], 1)
+        x7upup_cat_b2 = torch.cat([x6down, x7upup_b2], 1)
+        x7upup_cat_b3 = torch.cat([x6down, x7upup_b3], 1)
 
-        x6upup = self.dropout(self.upup6(x7upup_cat))
-        x6upup_cat = torch.cat([x5down, x6upup], 1)
+        x6upup_b1 = self.dropout(self.upup6_b1(x7upup_cat_b1))
+        x6upup_b2 = self.dropout(self.upup6_b2(x7upup_cat_b2))
+        x6upup_b3 = self.dropout(self.upup6_b3(x7upup_cat_b3))
+        x6upup_cat_b1 = torch.cat([x5down, x6upup_b1], 1)
+        x6upup_cat_b2 = torch.cat([x5down, x6upup_b2], 1)
+        x6upup_cat_b3 = torch.cat([x5down, x6upup_b3], 1)
 
-        x5upup = self.dropout(self.upup5(x6upup_cat))
-        x5upup_cat = torch.cat([x4down, x5upup], 1)
+        x5upup_b1 = self.dropout(self.upup5_b1(x6upup_cat_b1))
+        x5upup_b2 = self.dropout(self.upup5_b2(x6upup_cat_b2))
+        x5upup_b3 = self.dropout(self.upup5_b3(x6upup_cat_b3))
+        x5upup_cat_b1 = torch.cat([x4down, x5upup_b1], 1)
+        x5upup_cat_b2 = torch.cat([x4down, x5upup_b2], 1)
+        x5upup_cat_b3 = torch.cat([x4down, x5upup_b3], 1)
 
-        x4upup = self.upup4(x5upup_cat)
-        x4upup_cat = torch.cat([x3down, x4upup], 1)
+        x4upup_b1 = self.upup4_b1(x5upup_cat_b1)
+        x4upup_b2 = self.upup4_b2(x5upup_cat_b2)
+        x4upup_b3 = self.upup4_b3(x5upup_cat_b3)
+        x4upup_cat_b1 = torch.cat([x3down, x4upup_b1], 1)
+        x4upup_cat_b2 = torch.cat([x3down, x4upup_b2], 1)
+        x4upup_cat_b3 = torch.cat([x3down, x4upup_b3], 1)
 
-        x3upup = self.upup3(x4upup_cat)
-        x3upup_cat = torch.cat([x2down, x3upup], 1)
+        x3upup_b1 = self.upup3_b1(x4upup_cat_b1)
+        x3upup_b2 = self.upup3_b2(x4upup_cat_b2)
+        x3upup_b3 = self.upup3_b3(x4upup_cat_b3)
+        x3upup_cat_b1 = torch.cat([x2down, x3upup_b1], 1)
+        x3upup_cat_b2 = torch.cat([x2down, x3upup_b2], 1)
+        x3upup_cat_b3 = torch.cat([x2down, x3upup_b3], 1)
 
-        x2upup = self.upup2(x3upup_cat)
-        x2upup_cat = torch.cat([x1down, x2upup], 1)
 
-        x1upup = self.upup1(x2upup_cat)
+        x2upup_b1 = self.upup2_b1(x3upup_cat_b1)
+        x2upup_b2 = self.upup2_b2(x3upup_cat_b2)
+        x2upup_b3 = self.upup2_b3(x3upup_cat_b3)
+        x2upup_cat_b1 = torch.cat([x1down, x2upup_b1], 1)
+        x2upup_cat_b2 = torch.cat([x1down, x2upup_b2], 1)
+        x2upup_cat_b3 = torch.cat([x1down, x2upup_b3], 1)
 
-        return x1upup
+
+        x1upup_b1 = self.upup1_b1(x2upup_cat_b1)
+        x1upup_b2 = self.upup1_b1(x2upup_cat_b2)
+        x1upup_b3 = self.upup1_b1(x2upup_cat_b3)
+
+        return x1upup_b1, x1upup_b2, x1upup_b3
 
 class UnetDownPath(nn.Module):
     def __init__(self, outer_nc, inner_nc, norm_layer, block_location, use_bias, input_nc):

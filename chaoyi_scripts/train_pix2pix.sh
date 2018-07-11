@@ -33,5 +33,6 @@ set -ex
 # Version4: OneModalToThreeModal
 # unet_256_multiple_outputs
 # --n_outbranch 3
-
-python ./../train.py --dataroot /media/machine/Storage/Dataset/BraTS17_MICCAI/sliceExtracted_2D/reorder/train/shuffleSplit_imgs_for_pix2pix/btw_modalities_with_segmask/flair-to-t1 --display_ncols 5 --display_winsize 256 --name CrossModalityTransaction/flair-to-t1_pix2pix_maskGiven --model pix2pix_BraTS17_MultipleOutputs --which_model_netG unet_256_multiple_outputs --n_outbranches 3 --which_direction AtoB --lambda_L1 100 --dataset_mode aligned_BraTS17 --niter 50 --no_lsgan --norm batch --pool_size 0 #[UpdatedCommand-MaskReferenceGiven&Diff_B_computed] #[FlairtoT1]
+# aligned_BraTS17_all_in_one
+# data_dir = '/media/machine/Storage/Dataset/BraTS17_MICCAI/sliceExtracted_2D/info_kept/train_all_in_one_flatten_50_cases'
+python ./../train.py --dataroot /media/machine/Storage/Dataset/BraTS17_MICCAI/sliceExtracted_2D/info_kept/train_all_in_one_flatten_50_cases --display_ncols 5 --display_winsize 256 --name LockEncoderPath/T1 --model pix2pix_BraTS17_MultipleOutputs --which_model_netG unet_256_multiple_outputs --n_outbranches 3 --which_direction FROM_T1 --lambda_L1 100 --dataset_mode aligned_BraTS17_all_in_one --batchSize 16 --niter 50 --no_lsgan --norm batch --pool_size 0 #[UpdatedCommand-MaskReferenceGiven&Diff_B_computed] #[FlairtoT1]
